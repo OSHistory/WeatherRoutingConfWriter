@@ -2,3 +2,4 @@ conf/
 scripts/
 __pycache__/
 *pyc
+test.py

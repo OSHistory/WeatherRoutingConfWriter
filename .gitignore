@@ -3,3 +3,4 @@ scripts/
 __pycache__/
 *pyc
 test.py
+tmp_config.json

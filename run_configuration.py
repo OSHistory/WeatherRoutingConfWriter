@@ -7,12 +7,15 @@ import argparse
 import datetime
 import json
 import os
-import sys
 
+import lxml.etree as etree
 
 from conf_writer import ConfWriter, Configuration
 
-ap = argparse.ArgumentParser(description="Run a configuration file and generate an opencpn configuration xml file")
+ap = argparse.ArgumentParser(
+    description="""Run a configuration file and generate an opencpn
+        configuration xml file""")
+
 ap.add_argument("-a", "--append",
                 dest="append",
                 action="store_true",
@@ -21,16 +24,23 @@ ap.add_argument("-a", "--append",
 ap.add_argument("configuration_file")
 args = ap.parse_args()
 
-
-
 conf_file = args.configuration_file
 
 with open(conf_file) as fh:
     conf_data = json.load(fh)
 
-CONFIG_FILE = os.path.join(os.path.expanduser("~"), ".opencpn/plugins/weather_routing/ConfigFilePaths.txt")
+CONFIG_FILE = os.path.join(
+    os.path.expanduser("~"),
+    ".opencpn/plugins/weather_routing/ConfigFilePaths.xml"
+)
 
-all_filenames = []
+# Reload existing root or create new one
+if args.append:
+    config_doc = etree.parse(CONFIG_FILE)
+    config_root = config_doc.getroot()
+else:
+    config_root = etree.Element("BatchRoutingConfig")
+
 
 base_dir = conf_data["path"]["base_dir"]
 if not os.path.exists(base_dir):
@@ -56,7 +66,6 @@ for route in routes:
         print("Could not find end point!")
         continue
 
-
     cw.add_position(route[0], positions[route[0]][0], positions[route[0]][1])
     cw.add_position(route[1], positions[route[1]][0], positions[route[1]][1])
 
@@ -64,27 +73,39 @@ for route in routes:
 
     while (curr_date < stop_date):
         conf = Configuration(route[0], route[1], curr_date)
-        conf.dt = route[2] * 3600 # iso-chron-timestep
+        conf.dt = route[2] * 3600   # iso-chron-timestep
 
         for key in conf_data["ocpn"]:
             if key == "boat":
-                conf_data["ocpn"]["boat"] = os.path.join(os.path.expanduser("~"), ".opencpn/plugins/weather_routing/", conf_data["ocpn"]["boat"])
-                #conf.boat = conf_data["ocpn"]["boat"]
+                conf_data["ocpn"]["boat"] = os.path.join(
+                    os.path.expanduser("~"),
+                    ".opencpn/plugins/weather_routing/",
+                    conf_data["ocpn"]["boat"]
+                )
             conf.__dict__[key] = str(conf_data["ocpn"][key])
 
-
-        #conf.anchoring = 1
         cw.add_configuration(conf)
         curr_date += datetime.timedelta(0, hour_increment * 60 * 60)
 
-    file_name = os.path.join(base_dir, route[0] + "_" + route[1] + conf_data["suffix"] + ".xml")
-    all_filenames.append(file_name)
+    file_name = os.path.join(
+        base_dir,
+        route[0] + "_" + route[1] + conf_data["suffix"] + ".xml"
+    )
+
+    curr_route_config = etree.SubElement(config_root, "RouteConfig")
+    curr_route_config_path = etree.SubElement(curr_route_config, "ConfigPath")
+    curr_route_config_path.text = file_name
+    curr_route_config_grib = etree.SubElement(curr_route_config, "GribPath")
+    curr_route_config_grib.text = conf_data["time"]["grib_file"]
+
     cw.export_to_file(file_name)
 
-if args.append:
-    fh_flag = "a+"
-else:
-    fh_flag = "w+"
-with open(CONFIG_FILE, fh_flag) as fh:
-    for file_name in all_filenames:
-        fh.write(file_name + "\n")
+
+with open(CONFIG_FILE, "wb+") as fh:
+    fh.write(b'<?xml version="1.0" encoding="utf-8" ?>\n')
+    fh.write(
+        etree.tostring(
+            config_root,
+            encoding="utf-8",
+            pretty_print=True)
+    )

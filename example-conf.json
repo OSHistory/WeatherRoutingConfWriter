@@ -1,0 +1,23 @@
+{
+    "description": "Generate a set of succesfull routes to test gpx export function",
+    "suffix": "_gpx_export",
+    "path": {
+        "base_dir": "/path/to/write/the/configuration/"
+    },
+    "time": {
+        "hour_increment": 12,
+        "start_date": [2008, 3, 16, 6],
+        "end_date": [2008, 3, 24, 23],
+        "grib_file": "/path/to/your/grib_file.grib"
+    },
+    "positions": {
+        "PositionA": [41.7294, 12.2114],
+        "PositionB": [43.320, 6.80]
+    },
+    "routes": [
+        ["PositionA", "PositionB", 1]
+    ],
+    "ocpn": {
+        "boat": "Boat.xml"
+    }
+}

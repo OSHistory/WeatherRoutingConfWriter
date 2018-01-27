@@ -36,8 +36,11 @@ CONFIG_FILE = os.path.join(
 
 # Reload existing root or create new one
 if args.append:
-    config_doc = etree.parse(CONFIG_FILE)
-    config_root = config_doc.getroot()
+    if os.path.exists(CONFIG_FILE):
+        config_doc = etree.parse(CONFIG_FILE)
+        config_root = config_doc.getroot()
+    else:
+        config_root = etree.Element("BatchRoutingConfig")
 else:
     config_root = etree.Element("BatchRoutingConfig")
 

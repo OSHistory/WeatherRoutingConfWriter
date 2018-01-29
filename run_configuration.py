@@ -96,11 +96,11 @@ for route in routes:
     )
 
     curr_route_config = etree.SubElement(config_root, "RouteConfig")
+    curr_route_config.attrib["id"] = cw._id
     curr_route_config_path = etree.SubElement(curr_route_config, "ConfigPath")
     curr_route_config_path.text = file_name
     curr_route_config_grib = etree.SubElement(curr_route_config, "GribPath")
     curr_route_config_grib.text = conf_data["time"]["grib_file"]
-
     cw.export_to_file(file_name)
 
 

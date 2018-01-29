@@ -15,7 +15,8 @@ class ConfWriter():
         self._root = etree.Element("OpenCPNWeatherRoutingConfiguration")
         self._root.attrib["version"] = VERSION
         self._root.attrib["creator"] = CREATOR
-        self._root.attrib["id"] = self._create_id()
+        self._id = self._create_id()
+        self._root.attrib["id"] = self._id
 
     def add_position(self, name, lat, lon):
         route_node = etree.SubElement(self._root, "Position")
@@ -34,9 +35,9 @@ class ConfWriter():
         return _id
 
     def export_to_file(self, file_path):
-        with open(file_path, "w+") as fh:
-            fh.write('<?xml version="1.0" encoding="utf-8" ?>\n')
-            fh.write(etree.tostring(self._root, pretty_print=True, encoding="UTF-8").decode("UTF-8"))
+        with open(file_path, "wb+") as fh:
+            fh.write(b'<?xml version="1.0" encoding="utf-8" ?>\n')
+            fh.write(etree.tostring(self._root, pretty_print=True, encoding="UTF-8"))
             fh.flush()
 
 

@@ -1,6 +1,8 @@
 
 from datetime import datetime
 import os
+import random
+import string
 
 import lxml.etree as etree
 
@@ -13,6 +15,7 @@ class ConfWriter():
         self._root = etree.Element("OpenCPNWeatherRoutingConfiguration")
         self._root.attrib["version"] = VERSION
         self._root.attrib["creator"] = CREATOR
+        self._root.attrib["id"] = self._create_id()
 
     def add_position(self, name, lat, lon):
         route_node = etree.SubElement(self._root, "Position")
@@ -23,6 +26,12 @@ class ConfWriter():
     def add_configuration(self, conf_object):
         conf_node = conf_object._render_to_node()
         self._root.append(conf_node)
+
+    def _create_id(self):
+        _id = str(datetime.now().timestamp()).replace(".", "")
+        for i in range(0, 20):
+            _id += random.choice(string.ascii_letters)
+        return _id
 
     def export_to_file(self, file_path):
         with open(file_path, "w+") as fh:

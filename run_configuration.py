@@ -82,7 +82,7 @@ for route in routes:
             if key == "boat":
                 conf_data["ocpn"]["boat"] = os.path.join(
                     os.path.expanduser("~"),
-                    ".opencpn/plugins/weather_routing/",
+                    ".opencpn/plugins/weather_routing/boats/",
                     conf_data["ocpn"]["boat"]
                 )
             conf.__dict__[key] = str(conf_data["ocpn"][key])

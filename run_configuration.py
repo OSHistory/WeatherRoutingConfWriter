@@ -12,6 +12,15 @@ import lxml.etree as etree
 
 from conf_writer import ConfWriter, Configuration
 
+def safe_end_date(end_arr):
+    while True:
+        try:
+            dt = datetime.datetime(end_arr[0], end_arr[1], end_arr[2], end_arr[3])
+            break
+        except ValueError:
+            end_arr[2] = end_arr[2] - 1
+    return dt
+
 ap = argparse.ArgumentParser(
     description="""Run a configuration file and generate an opencpn
         configuration xml file""")
@@ -45,7 +54,11 @@ else:
     config_root = etree.Element("BatchRoutingConfig")
 
 
-base_dir = conf_data["path"]["base_dir"]
+base_dir = conf_data["path"]["base_dir"].replace(
+    "~",
+    os.path.expanduser("~")
+)
+
 if not os.path.exists(base_dir):
     os.makedirs(base_dir)
 
@@ -53,7 +66,8 @@ start = conf_data["time"]["start_date"]
 end = conf_data["time"]["end_date"]
 
 start_date = datetime.datetime(start[0], start[1], start[2], start[3])
-stop_date = datetime.datetime(end[0], end[1], end[2], end[3])
+stop_date = safe_end_date(end)
+
 hour_increment = conf_data["time"]["hour_increment"]
 
 routes = conf_data["routes"]
@@ -100,7 +114,10 @@ for route in routes:
     curr_route_config_path = etree.SubElement(curr_route_config, "ConfigPath")
     curr_route_config_path.text = file_name
     curr_route_config_grib = etree.SubElement(curr_route_config, "GribPath")
-    curr_route_config_grib.text = conf_data["time"]["grib_file"]
+    curr_route_config_grib.text = conf_data["time"]["grib_file"].replace(
+            "~",
+            os.path.expanduser("~")
+        )
     cw.export_to_file(file_name)
 
 

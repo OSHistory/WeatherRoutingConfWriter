@@ -20,7 +20,6 @@ for year in $(seq 1988 2015); do
       -e "s/YEAR/$year/g" \
       -e "s/MONTH_NUM/$month/g" \
       -e "s/MONTH_STR/$month_str/g" $template > tmp_config.json
-    exit
     python3 run_configuration.py tmp_config.json -a
   done
 done
